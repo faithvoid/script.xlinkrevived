@@ -3,6 +3,7 @@ import xbmcgui
 import requests
 
 VECTORS_FILE_PATH = "Q:/scripts/XLink/vectors.txt"
+FAVES = "Q:/scripts/XLink/faves.txt"
 
 class KaiConnect:
     """Connection to Kai Engine via IP and Port."""
@@ -88,7 +89,7 @@ class KaiConnect:
             xbmcgui.Dialog().ok('Setting Value', settings_options[choice])
 
     def main(self):
-        choice = xbmcgui.Dialog().select('Choose an option', ['Get XLink Kai Status', 'Get Current Arena', 'Set Default Arena', 'Show Arenas', 'Settings'])
+        choice = xbmcgui.Dialog().select('Choose an option', ['Get XLink Kai Status', 'Get Current Arena', 'Show Arenas', 'Show Favourite Arenas', 'Set Default Arena', 'Settings'])
         
         if choice == 0:  # Get Status
             status = self.GetFromKai('getstatus')
@@ -98,15 +99,19 @@ class KaiConnect:
             vector = self.GetVector()
             xbmcgui.Dialog().ok('Kai Vector', 'Current Vector: ' + vector)
             return
-        elif choice == 2:  # Set Vector
-            vector = 'Arena'
-            self.SetVector(vector)
-            return
-        elif choice == 3:  # Show Vectors
+        elif choice == 2:  # Show Arenas
             vectors = self.ReadVectorsFromFile(VECTORS_FILE_PATH)
             self.DisplayVectorsMenu(vectors)
             return
-        elif choice == 4:  # Settings
+        elif choice == 3:  # Show Favourite Arenas
+            faves = self.ReadVectorsFromFile(FAVES)
+            self.DisplayVectorsMenu(faves)
+            return
+        elif choice == 4:  # Set Vector
+            vector = 'Arena'
+            self.SetVector(vector)
+            return
+        elif choice == 5:  # Settings
             self.DisplaySettings()
             return
 
