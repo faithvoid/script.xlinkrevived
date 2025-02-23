@@ -1,4 +1,4 @@
-# XLink Kai script for XBMC4Xbox
+# XLink Revived - XLink Kai script for XBMC4Xbox
 
 ![](screenshots/1.png)
 ![](screenshots/2.png)
