@@ -20,3 +20,7 @@
 - Querying arenas (the API doesn't seem to support this, so all joining has to be done manually!)
 - Showing additional user information
 - Editing settings of any kind
+
+# Credits
+- SolAZDev - Original "xbmc-kai" script that this uses initialization code from.
+- CrunchBite - For working on XLink Kai, providing accessible REST API requests, and chatting with me about how certain systems work! :)
