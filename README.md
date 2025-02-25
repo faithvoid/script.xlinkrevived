@@ -21,6 +21,12 @@
 - Showing additional user information
 - Editing settings of any kind
 
+## TODO
+- Query arenas and sub-arenas whenever that functionality becomes available (talked to CrunchBite about adding sub-arena API calls & he's willing to work on it!)
+- Show currently logged in user as script title? (ie; "XLink Kai - BattleAngelAlice")?
+- Integrate into Cortana Server Browser
+- Rename all public-facing entries of the word "Vectors" to "Arenas" for clarity (as they're referred to as Vectors behind the scenes, but Arenas in UI)
+
 # Credits
 - SolAZDev - Original "xbmc-kai" script that this uses initialization code from.
 - CrunchBite - For working on XLink Kai, providing accessible REST API requests, and chatting with me about how certain systems work! :)
