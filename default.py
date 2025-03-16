@@ -89,7 +89,7 @@ class KaiConnect:
             xbmcgui.Dialog().ok('Setting Value', settings_options[choice])
 
     def main(self):
-        choice = xbmcgui.Dialog().select('Choose an option', ['Get XLink Kai Status', 'Get Current Arena', 'Show Arenas', 'Show Favourite Arenas', 'Set Default Arena', 'Settings'])
+        choice = xbmcgui.Dialog().select('Choose an option', ['XLink Kai Status', 'Current Arena', 'Arena List', 'Show Favourite Arenas', 'Set Default Arena', 'Settings'])
         
         if choice == 0:  # Get Status
             status = self.GetFromKai('getstatus')
