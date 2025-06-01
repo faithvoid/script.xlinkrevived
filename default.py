@@ -1,119 +1,215 @@
 import xbmc
 import xbmcgui
 import requests
+import os
+import sys
 
-VECTORS_FILE_PATH = "Q:/scripts/XLink/vectors.txt"
-FAVES = "Q:/scripts/XLink/faves.txt"
+IP_FILE_PATH = "Q:/scripts/XLink/IP.txt"
 
 class KaiConnect:
     """Connection to Kai Engine via IP and Port."""
-    kaiIP = '192.168.1.113'
     kaiPort = 34522
     kaiPortFoward = 30000  # Doubt I'll need this
-
+    
+    def __init__(self):
+        self.kaiIP = self.get_kai_ip()
+    
+    def get_kai_ip(self):
+        if os.path.exists(IP_FILE_PATH):
+            with open(IP_FILE_PATH, 'r') as file:
+                return file.read().strip()
+        else:
+            return self.prompt_for_ip()
+    
+    def prompt_for_ip(self):
+        keyboard = xbmc.Keyboard('', 'Enter Kai IP Address', False)
+        keyboard.doModal()
+        if keyboard.isConfirmed():
+            ip = keyboard.getText()
+            with open(IP_FILE_PATH, 'w') as file:
+                file.write(ip)
+            return ip
+        return ""
+    
     def CheckForKai(self):
-        url = 'http://' + self.kaiIP + ':' + str(self.kaiPort) + '/api/v1/isalive'
+        url = 'http://{}:{}/api/v1/isalive'.format(self.kaiIP, self.kaiPort)
         print('Trying to get ' + url)
-        r = requests.get(url)
-        if r.status_code != 200:
-            xbmcgui.Dialog().ok('Kai Status', 'Wrong address, try again, Error Code: ' + str(r.status_code))
-        else:
-            xbmcgui.Dialog().ok('Kai Status', r.text)
-
-    def GetFromKai(self, getCall):
-        url = 'http://' + self.kaiIP + ':' + str(self.kaiPort) + '/api/v1/' + getCall
-        print('Trying to get ' + url)
-        r = requests.get(url)
-        if r.status_code != 200:
-            xbmcgui.Dialog().ok('Kai Status', 'Wrong address, try again, Error Code: ' + str(r.status_code))
-        else:
-            return r.text
-
-    def GetVector(self):
-        url = 'http://' + self.kaiIP + ':' + str(self.kaiPort) + '/api/v1/getvector'
-        print('Trying to get ' + url)
-        r = requests.get(url)
-        if r.status_code != 200:
-            xbmcgui.Dialog().ok('Kai Status', 'Failed to get vector, Error Code: ' + str(r.status_code))
-        else:
-            response = r.text.split(':')
-            if len(response) > 1:
-                return response[1].strip()
-            else:
-                return 'Unknown'
-
-    def SetVector(self, vector):
-        url = 'http://' + self.kaiIP + ':' + str(self.kaiPort) + '/api/v1/setvector?vector=' + vector
-        print('Trying to get ' + url)
-        r = requests.get(url)
-        if r.status_code != 200:
-            xbmcgui.Dialog().ok('Kai Status', 'Failed to set vector, Error Code: ' + str(r.status_code))
-        else:
-            xbmcgui.Dialog().ok('Kai Status', 'Vector set to: ' + vector)
-
-    def ReadVectorsFromFile(self, filepath):
         try:
-            with open(filepath, 'r') as file:
-                lines = file.readlines()
-            return lines
-        except FileNotFoundError:
-            xbmcgui.Dialog().ok('Error', 'Vectors file not found.')
-            return []
+            r = requests.get(url, timeout=10)
+            xbmcgui.Dialog().ok('Kai Status', r.text if r.status_code == 200 else 'Wrong address, try again, Error Code: {}'.format(r.status_code))
+        except requests.exceptions.RequestException:
+            xbmcgui.Dialog().ok('Kai Status', 'Connection timed out. Please check the Kai Client.')
+    
+    def GetFromKai(self, getCall):
+        url = 'http://{}:{}/api/v1/{}'.format(self.kaiIP, self.kaiPort, getCall)
+        print('Trying to get ' + url)
+        try:
+            r = requests.get(url, timeout=10)
+            if r.status_code == 200:
+                return r.text
+        except requests.exceptions.RequestException:
+            xbmcgui.Dialog().ok('Kai Status', 'Connection timed out. Please check the Kai Client.')
+        return None
+    
+    def GetVector(self):
+        response = self.GetFromKai('getvector')
+        return response.split(':')[-1].strip() if response and ':' in response else 'Unknown'
+    
+    def SetVector(self, vector):
+        url = 'http://{}:{}/api/v1/setvector?vector={}'.format(self.kaiIP, self.kaiPort, vector)
+        print('Trying to get ' + url)
+        try:
+            r = requests.get(url, timeout=10)
+            xbmcgui.Dialog().ok('Kai Status', 'Arena set to: {}'.format(vector) if r.status_code == 200 else 'Failed to set vector, Error Code: {}'.format(r.status_code))
+        except requests.exceptions.RequestException:
+            xbmcgui.Dialog().ok('Kai Status', 'Connection timed out. Please check the Kai Client.')
+    
+    def GetVectorsFromAPI(self):
+        try:
+            response = requests.get("http://api.teamxlink.co.uk/kai/GetGameList/v2")
+            response.raise_for_status()
+            data = response.json()
+            vectors = {}
+
+            for game in data.get("gamelist", {}).get("games", []):
+                vector = game.get("primaryVector")
+                if vector and vector.startswith("Arena/XBox/"):
+                    parts = vector.split('/')
+                    if len(parts) >= 4:
+                        category = parts[2]
+                        title = parts[3]
+                        if category not in vectors:
+                            vectors[category] = []
+                        vectors[category].append(title)
+            return vectors
+        except Exception as e:
+            xbmcgui.Dialog().ok('Error', 'Failed to fetch arenas: {}'.format(str(e)))
+            return {}
+
+    def GetActiveVectorsFromAPI(self):
+        try:
+            response = requests.get("http://api.teamxlink.co.uk/kai/GetActiveGames/v2")
+            response.raise_for_status()
+            data = response.json()
+            vectors = {}
+
+            for game in data.get("gamelist", {}).get("games", []):
+                vector = game.get("primaryVector")
+                if vector and vector.startswith("Arena/XBox/"):
+                    parts = vector.split('/')
+                    if len(parts) >= 4:
+                        category = parts[2]
+                        title = parts[3]
+                        if category not in vectors:
+                            vectors[category] = []
+                        vectors[category].append(title)
+            return vectors
+        except Exception as e:
+            xbmcgui.Dialog().ok('Error', 'Failed to fetch arenas: {}'.format(str(e)))
+            return {}
 
     def DisplayVectorsMenu(self, vectors):
-        categories = {}
-        current_category = None
-        for line in vectors:
-            line = line.strip()
-            if line.startswith('[') and line.endswith(']'):
-                current_category = line[1:-1]
-                categories[current_category] = []
-            elif current_category:
-                categories[current_category].append(line)
+        if not vectors:
+            xbmcgui.Dialog().ok('No Arenas', 'No game arenas available.')
+            return
 
-        category_choice = xbmcgui.Dialog().select('Choose a Category', list(categories.keys()))
+        categories = list(vectors.keys())
+        category_choice = xbmcgui.Dialog().select('Arenas', categories)
         if category_choice != -1:
-            chosen_category = list(categories.keys())[category_choice]
-            subcategory_choice = xbmcgui.Dialog().select('Choose a Sub-category', categories[chosen_category])
+            chosen_category = categories[category_choice]
+            subcategory_choice = xbmcgui.Dialog().select('Games', vectors[chosen_category])
             if subcategory_choice != -1:
-                vector = 'Arena/XBox/' + chosen_category.replace(' ', '%20') + '/' + categories[chosen_category][subcategory_choice].replace(' ', '%20')
+                cat_encoded = chosen_category.replace(' ', '%20')
+                title_encoded = vectors[chosen_category][subcategory_choice].replace(' ', '%20')
+                vector = "Arena/XBox/%s/%s" % (cat_encoded, title_encoded)
                 self.SetVector(vector)
 
+    def DisplayActiveVectorsMenu(self, vectors):
+        if not vectors:
+            xbmcgui.Dialog().ok('No Arenas', 'No game arenas available.')
+            return
+
+        categories = list(vectors.keys())
+        category_choice = xbmcgui.Dialog().select('Active Arenas', categories)
+        if category_choice != -1:
+            chosen_category = categories[category_choice]
+            subcategory_choice = xbmcgui.Dialog().select('Active Games', vectors[chosen_category])
+            if subcategory_choice != -1:
+                cat_encoded = chosen_category.replace(' ', '%20')
+                title_encoded = vectors[chosen_category][subcategory_choice].replace(' ', '%20')
+                vector = "Arena/XBox/%s/%s" % (cat_encoded, title_encoded)
+                self.SetVector(vector)
+    
     def DisplaySettings(self):
         status = self.GetFromKai('getstatus')
-        settings_lines = status.split('\n')
-        settings_options = [line.strip() for line in settings_lines if line.strip()]
+        if status:
+            settings_options = [line.strip() for line in status.split('\n') if line.strip()]
+            choice = xbmcgui.Dialog().select('Settings', settings_options)
+            if choice != -1:
+                xbmcgui.Dialog().ok('Setting Value', settings_options[choice])
 
-        choice = xbmcgui.Dialog().select('Settings', settings_options)
-        if choice != -1:
-            xbmcgui.Dialog().ok('Setting Value', settings_options[choice])
-
+    def GetUsername(self):
+        status = self.GetFromKai('getstatus')
+        if status:
+            for line in status.split('\n'):
+                if line.strip().startswith('username:'):
+                    return line.strip().split(':', 1)[1]
+        return 'N/A'
+    
     def main(self):
-        choice = xbmcgui.Dialog().select('Choose an option', ['XLink Kai Status', 'Current Arena', 'Arena List', 'Show Favourite Arenas', 'Set Default Arena', 'Settings'])
-        
-        if choice == 0:  # Get Status
-            status = self.GetFromKai('getstatus')
-            xbmcgui.Dialog().ok('Kai Status', 'Status: ' + status)
-            return
-        elif choice == 1:  # Get Vector
-            vector = self.GetVector()
-            xbmcgui.Dialog().ok('Kai Vector', 'Current Vector: ' + vector)
-            return
-        elif choice == 2:  # Show Arenas
-            vectors = self.ReadVectorsFromFile(VECTORS_FILE_PATH)
+        arg = None
+        if len(sys.argv) > 1:
+            arg = sys.argv[1].lstrip('?')
+
+        # Direct access to subcategories via argument
+        if arg == 'Arenas':
+            vectors = self.GetVectorsFromAPI()
             self.DisplayVectorsMenu(vectors)
             return
-        elif choice == 3:  # Show Favourite Arenas
-            faves = self.ReadVectorsFromFile(FAVES)
-            self.DisplayVectorsMenu(faves)
+        elif arg == 'ActiveArenas':
+            vectors = self.GetActiveVectorsFromAPI()
+            self.DisplayActiveVectorsMenu(vectors)
             return
-        elif choice == 4:  # Set Vector
-            vector = 'Arena'
-            self.SetVector(vector)
+        elif arg == 'Default':
+            self.SetVector('Arena')
             return
-        elif choice == 5:  # Settings
+        elif arg == 'Status':
+            status = self.GetFromKai('getstatus')
+            if status:
+                xbmcgui.Dialog().ok('XLink Kai', u'Status: {}'.format(status).encode('ascii', 'ignore'))
+            return
+        elif arg == 'Settings':
             self.DisplaySettings()
             return
+
+        # Menu stuff!
+        username = self.GetUsername()
+        vector = self.GetVector()
+
+        if vector != 'Unknown':
+            current_vector_display = vector.split('/')[-1].replace('%20', ' ')
+        else:
+            current_vector_display = 'N/A'
+
+        menu_title = '%s - Arena: %s' % (username, current_vector_display)
+
+        choice = xbmcgui.Dialog().select(menu_title, [
+            'Arena List',
+            'Active Arenas',
+            'Return to Default Arena',
+            'Settings'
+        ])
+
+        if choice == 0:
+            vectors = self.GetVectorsFromAPI()
+            self.DisplayVectorsMenu(vectors)
+        elif choice == 1:
+            vectors = self.GetActiveVectorsFromAPI()
+            self.DisplayActiveVectorsMenu(vectors)
+        elif choice == 2:
+            self.SetVector('Arena')
+        elif choice == 3:
+            self.DisplaySettings()
 
 if __name__ == '__main__':
     kc = KaiConnect()
