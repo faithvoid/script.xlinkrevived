@@ -26,6 +26,9 @@
 - Editing settings of any kind
 - Any sort of social feature (ie; friends, chatting)
 
+## Bugs:
+- Toast notification icons will end up being blank for most users. A workaround is to add an "icon-xlinkkai.png" file to your skin, or modify the lines in default.py that say "icon-xlinkkai.png" to point to the icon of your choice.
+
 ## TODO
 - Integrate into Cortana Server Browser
 - Add a function to manually edit "IP.txt"
