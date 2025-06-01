@@ -14,6 +14,7 @@
 - Launch XLink Kai on your host machine, then launch the XLink Revived script.
 - ???
 - Profit!
+- (For the best user experience, pair this script with [Cortana Server Browser](https://github.com/faithvoid/script.cortanaserverbrowser) so you can view current session information including playercounts!)
 
 ## Working
 - Displaying username + current Arena
