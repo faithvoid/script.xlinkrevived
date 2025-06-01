@@ -11,6 +11,7 @@
 ## Installation:
 - Copy "default.py" to "Q:/scripts/XLinkRevived/default.py"
 - Modify "IP.txt" with the IP address of your XLink Kai machine, then copy it to the same folder as default.py.
+- Launch XLink Kai on your host machine, then launch the XLink Revived script.
 - ???
 - Profit!
 
