@@ -5,10 +5,14 @@
 ![](screenshots/6.png)
 ![](screenshots/2.png)
 ![](screenshots/3.png)
-![](screenshots/4.png)
 ![](screenshots/7.png)
 ![](screenshots/8.png)
 
+## Installation:
+- Copy "default.py" to "Q:/scripts/XLinkRevived/default.py"
+- Modify "IP.txt" with the IP address of your XLink Kai machine, then copy it to the same folder as default.py.
+- ???
+- Profit!
 
 ## Working
 - Displaying username + current Arena
@@ -24,6 +28,7 @@
 
 ## TODO
 - Integrate into Cortana Server Browser
+- Add a function to manually edit "IP.txt"
 
 # Credits
 - SolAZDev - Original "xbmc-kai" script that this uses initialization code from.
