@@ -15,6 +15,7 @@
 - Querying and joining Arenas (via "Arenas List" and "Active Arenas")
 - Setting the Arena back to the default Arena!
 - Viewing XLink Kai statistics
+- sys.argv support for skin integration [ie; calling RunScript(Q:/scripts/XLink/default.py,ActiveArenas) will automatically launch the Active Arenas subcategory
 
 ## Not Working
 - Showing additional user information
