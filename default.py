@@ -1,47 +1,59 @@
+import socket
 import xbmc
 import xbmcgui
 import requests
 import os
 import sys
-
-IP_FILE_PATH = "Q:/scripts/XLink/IP.txt"
+import time
 
 class KaiConnect:
-    """Connection to Kai Engine via IP and Port."""
     kaiPort = 34522
-    kaiPortFoward = 30000  # Doubt I'll need this
-    
+    kaiPortFoward = 30000  # Probably unused
+
     def __init__(self):
         self.kaiIP = self.get_kai_ip()
-    
+
     def get_kai_ip(self):
-        if os.path.exists(IP_FILE_PATH):
-            with open(IP_FILE_PATH, 'r') as file:
-                return file.read().strip()
-        else:
-            return self.prompt_for_ip()
-    
-    def prompt_for_ip(self):
-        keyboard = xbmc.Keyboard('', 'Enter Kai IP Address', False)
-        keyboard.doModal()
-        if keyboard.isConfirmed():
-            ip = keyboard.getText()
-            with open(IP_FILE_PATH, 'w') as file:
-                file.write(ip)
-            return ip
-        return ""
-    
-    def CheckForKai(self):
-        url = 'http://{}:{}/api/v1/isalive'.format(self.kaiIP, self.kaiPort)
-        print('Trying to get ' + url)
+        return self.discover_kai_engine()
+
+    def discover_kai_engine(self, timeout=10):
+        message = b'KAI_CLIENT_DISCOVER;'
+        response_signature = b'KAI_CLIENT_ENGINE_HERE;'
+        broadcast_addr = '<broadcast>'
+        port = self.kaiPort
+
+        # Set up UDP socket for broadcast
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        sock.settimeout(timeout)
+
+        # Send broadcast
         try:
-            r = requests.get(url, timeout=10)
-            if r.status_code == 200:
-                xbmc.executebuiltin('Notification("XLink Revived", "%s", 5000, "defaulticonerror.png")' % r.text)
-            else:
-                xbmc.executebuiltin('Notification("XLink Revived", "Wrong address, try again, Error Code: %d", 5000, "defaulticonerror.png")' % r.status_code)
-        except requests.exceptions.RequestException:
-            xbmc.executebuiltin('Notification("XLink Revived", "Connection timed out. Please check the Kai Client.", 5000, "defaulticonerror.png")')
+            sock.sendto(message, (broadcast_addr, port))
+        except Exception as e:
+            xbmc.executebuiltin('Notification("XLink Revived", "Failed to send broadcast: %s", 5000, "defaulticonerror.png")' % str(e))
+            sock.close()
+            return ""
+    
+        # Listen for reply
+        start = time.time()
+        kai_ip = ""
+        while time.time() - start < timeout:
+            try:
+                data, addr = sock.recvfrom(1024)
+                if data.strip() == response_signature:
+                    kai_ip = addr[0]
+                    xbmc.executebuiltin('Notification("XLink Revived", "Kai Engine found at %s", 5000, "icon-xlinkkai.png")' % kai_ip)
+                    break
+            except socket.timeout:
+                break
+            except Exception as e:
+                xbmc.executebuiltin('Notification("XLink Revived", "Error discovering Kai: %s", 5000, "defaulticonerror.png")' % str(e))
+                break
+        sock.close()
+        if not kai_ip:
+            xbmc.executebuiltin('Notification("XLink Revived", "Kai Engine not found on network.", 5000, "defaulticonerror.png")')
+        return kai_ip
     
     def GetFromKai(self, getCall):
         url = 'http://{}:{}/api/v1/{}'.format(self.kaiIP, self.kaiPort, getCall)
@@ -51,7 +63,7 @@ class KaiConnect:
             if r.status_code == 200:
                 return r.text
         except requests.exceptions.RequestException:
-            xbmc.executebuiltin('Notification("XLink Revived", "Connection timed out. Please check the Kai Client.", 5000, "defaulticonerror.png")')
+            xbmc.executebuiltin('Notification("XLink Revived", "Connection timed out. Please check the Kai Client.", 5000, "icon-error.png")')
         return None
     
     def GetVector(self):
@@ -67,9 +79,9 @@ class KaiConnect:
             if r.status_code == 200:
                 xbmc.executebuiltin('Notification("XLink Revived", "Arena set to: %s", 5000, "icon-xlinkkai.png")' % game_name)
             else:
-                xbmc.executebuiltin('Notification("XLink Revived", "Failed to set vector, Error Code: %d", 5000, "defaulticonerror.png")' % r.status_code)
+                xbmc.executebuiltin('Notification("XLink Revived", "Failed to set vector, Error Code: %d", 5000, "icon-error.png")' % r.status_code)
         except requests.exceptions.RequestException:
-            xbmc.executebuiltin('Notification("XLink Revived", "Connection timed out. Please check the Kai Client.", 5000, "defaulticonerror.png")')
+            xbmc.executebuiltin('Notification("XLink Revived", "Connection timed out. Please check the Kai Client.", 5000, "icon-error.png")')
     
     def GetVectorsFromAPI(self):
         try:
@@ -90,7 +102,7 @@ class KaiConnect:
                         vectors[category].append(title)
             return vectors
         except Exception as e:
-            xbmc.executebuiltin('Notification("Error", "Failed to fetch arenas: %s", 5000, "defaulticonerror.png")' % str(e))
+            xbmc.executebuiltin('Notification("Error", "Failed to fetch arenas: %s", 5000, "icon-error.png")' % str(e))
             return {}
 
     def GetActiveVectorsFromAPI(self):
@@ -112,12 +124,12 @@ class KaiConnect:
                         vectors[category].append(title)
             return vectors
         except Exception as e:
-            xbmc.executebuiltin('Notification("Error", "Failed to fetch arenas: %s", 5000, "defaulticonerror.png")' % str(e))
+            xbmc.executebuiltin('Notification("Error", "Failed to fetch arenas: %s", 5000, "icon-error.png")' % str(e))
             return {}
 
     def DisplayVectorsMenu(self, vectors):
         if not vectors:
-            xbmc.executebuiltin('Notification("No Arenas", "No game arenas available.", 5000, "defaulticonerror.png")')
+            xbmc.executebuiltin('Notification("No Arenas", "No game arenas available.", 5000, "icon-error.png")')
             return
 
         categories = list(vectors.keys())
@@ -133,7 +145,7 @@ class KaiConnect:
 
     def DisplayActiveVectorsMenu(self, vectors):
         if not vectors:
-            xbmc.executebuiltin('Notification("No Arenas", "No game arenas available.", 5000, "defaulticonerror.png")')
+            xbmc.executebuiltin('Notification("No Arenas", "No game arenas available.", 5000, "icon-error.png")')
             return
 
         categories = list(vectors.keys())
