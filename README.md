@@ -20,6 +20,7 @@
 ## Not Working
 - Showing additional user information
 - Editing settings of any kind
+- Any sort of social feature (ie; friends, chatting)
 
 ## TODO
 - Integrate into Cortana Server Browser
