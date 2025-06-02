@@ -21,6 +21,7 @@
 - sys.argv support for skin integration [ie; calling RunScript(Q:/scripts/XLink/default.py,ActiveArenas) will automatically launch the Active Arenas subcategory
 
 ## Not Working
+- Joining sub-Arenas (ie; you can join the primary "Halo 2" arena, but not the "Latin America" -> "Solo Retos" sub-Arenas)
 - Showing additional user information
 - Editing settings of any kind
 - Any sort of social feature (ie; friends, chatting)
