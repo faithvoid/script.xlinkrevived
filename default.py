@@ -82,14 +82,14 @@ class KaiConnect:
                 xbmc.executebuiltin('Notification("XLink Revived", "Failed to set vector, Error Code: %d", 5000, "icon-error.png")' % r.status_code)
         except requests.exceptions.RequestException:
             xbmc.executebuiltin('Notification("XLink Revived", "Connection timed out. Please check the Kai Client.", 5000, "icon-error.png")')
-    
-    def GetVectorsFromAPI(self):
+
+    # Fetch vectors and subVectors
+    def GetFullVectorsFromAPI(self):
         try:
-            response = requests.get("http://api.teamxlink.co.uk/kai/GetGameList/v2")
+            response = requests.get("http://api.teamxlink.co.uk/kai/GetGameList/v3")
             response.raise_for_status()
             data = response.json()
             vectors = {}
-
             for game in data.get("gamelist", {}).get("games", []):
                 vector = game.get("primaryVector")
                 if vector and vector.startswith("Arena/XBox/"):
@@ -97,13 +97,54 @@ class KaiConnect:
                     if len(parts) >= 4:
                         category = parts[2]
                         title = parts[3]
+                        subvectors = game.get("subVectors", [])
                         if category not in vectors:
                             vectors[category] = []
-                        vectors[category].append(title)
+                        vectors[category].append((title, subvectors))
             return vectors
         except Exception as e:
             xbmc.executebuiltin('Notification("Error", "Failed to fetch arenas: %s", 5000, "icon-error.png")' % str(e))
             return {}
+
+    def DisplayVectorsMenu(self, vectors):
+        if not vectors:
+            xbmc.executebuiltin('Notification("No Arenas", "No game arenas available.", 5000, "icon-error.png")')
+            return
+
+        categories = list(vectors.keys())
+        category_choice = xbmcgui.Dialog().select('Arenas', categories)
+        if category_choice != -1:
+            chosen_category = categories[category_choice]
+            games = vectors[chosen_category]
+            game_titles = [g[0] for g in games]
+            subcategory_choice = xbmcgui.Dialog().select('Games', game_titles)
+            if subcategory_choice != -1:
+                chosen_game, subvectors = games[subcategory_choice]
+                parent_vector = "Arena/XBox/%s/%s" % (chosen_category, chosen_game)
+                if subvectors:
+                    # Prepare sub-arena menu with primary arena as first option
+                    display_names = ["[ %s ]" % chosen_game]
+                    vector_choices = [parent_vector.replace(' ', '%20')]
+                    # Indented display for nested sub-vectors
+                    for sv in subvectors:
+                        name = sv.split('/')[-1]
+                        parent_found = False
+                        for parent in subvectors:
+                            if sv != parent and sv.startswith(parent + "/"):
+                                display_names.append("  - " + name)
+                                parent_found = True
+                                break
+                        if not parent_found:
+                            display_names.append(name)
+                        vector_choices.append(sv)
+                    sub_choice = xbmcgui.Dialog().select('Sub Arenas', display_names)
+                    if sub_choice == -1:
+                        return
+                    else:
+                        self.SetVector(vector_choices[sub_choice])
+                        return
+                # If no subvectors, select the main vector
+                self.SetVector(parent_vector.replace(' ', '%20'))
 
     def GetActiveVectorsFromAPI(self):
         try:
@@ -126,22 +167,6 @@ class KaiConnect:
         except Exception as e:
             xbmc.executebuiltin('Notification("Error", "Failed to fetch arenas: %s", 5000, "icon-error.png")' % str(e))
             return {}
-
-    def DisplayVectorsMenu(self, vectors):
-        if not vectors:
-            xbmc.executebuiltin('Notification("No Arenas", "No game arenas available.", 5000, "icon-error.png")')
-            return
-
-        categories = list(vectors.keys())
-        category_choice = xbmcgui.Dialog().select('Arenas', categories)
-        if category_choice != -1:
-            chosen_category = categories[category_choice]
-            subcategory_choice = xbmcgui.Dialog().select('Games', vectors[chosen_category])
-            if subcategory_choice != -1:
-                cat_encoded = chosen_category.replace(' ', '%20')
-                title_encoded = vectors[chosen_category][subcategory_choice].replace(' ', '%20')
-                vector = "Arena/XBox/%s/%s" % (cat_encoded, title_encoded)
-                self.SetVector(vector)
 
     def DisplayActiveVectorsMenu(self, vectors):
         if not vectors:
@@ -184,7 +209,7 @@ class KaiConnect:
             arg = sys.argv[1].lstrip('?')
 
         if arg == 'Arenas':
-            vectors = self.GetVectorsFromAPI()
+            vectors = self.GetFullVectorsFromAPI()
             self.DisplayVectorsMenu(vectors)
             return
         elif arg == 'ActiveArenas':
@@ -221,7 +246,7 @@ class KaiConnect:
         ])
 
         if choice == 0:
-            vectors = self.GetVectorsFromAPI()
+            vectors = self.GetFullVectorsFromAPI()
             self.DisplayVectorsMenu(vectors)
         elif choice == 1:
             vectors = self.GetActiveVectorsFromAPI()
