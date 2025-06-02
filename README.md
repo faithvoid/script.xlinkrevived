@@ -16,12 +16,13 @@
 ## Working
 - Displaying username + current Arena
 - Querying and joining Arenas (via "Arenas List" and "Active Arenas")
+- Querying and joining sub-Arenas (via "Arenas List")
 - Setting the Arena back to the default Arena!
 - Viewing XLink Kai statistics
 - sys.argv support for skin integration [ie; calling RunScript(Q:/scripts/XLink/default.py,ActiveArenas) will automatically launch the Active Arenas subcategory
 
 ## Not Working
-- Joining sub-Arenas (ie; you can join the primary "Halo 2" arena, but not the "Latin America" -> "Solo Retos" sub-Arenas)
+- Joining sub-Arenas from Active Arenas (as it's not implemented in the GetActiveGames API, only in GetGamesList)
 - Showing additional user information
 - Editing settings of any kind
 - Any sort of social feature (ie; friends, chatting)
