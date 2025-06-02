@@ -13,6 +13,10 @@
 - Launch XLink Kai on your host machine, then launch the XLink Revived script and watch as it connects automagically!
 - (For the best user experience, pair this script with [Cortana Server Browser](https://github.com/faithvoid/script.cortanaserverbrowser) so you can view current session information including playercounts!)
 
+## FAQ:
+- "My XLink system isn't detected?"
+Make sure that XLink Kai is running, has "Allow remote UI connections" enabled in the settings (usually on by default), and that UDP/TCP ports 34522 are allowed in your firewall settings.
+
 ## Working
 - Displaying username + current Arena
 - Querying and joining Arenas (via "Arenas List" and "Active Arenas")
