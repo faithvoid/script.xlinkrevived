@@ -1,3 +1,11 @@
+# ______ ___  _____ _____ _   _ _   _  _____ ___________ 
+# |  ___/ _ \|_   _|_   _| | | | | | ||  _  |_   _|  _  \
+# | |_ / /_\ \ | |   | | | |_| | | | || | | | | | | | | |
+# |  _||  _  | | |   | | |  _  | | | || | | | | | | | | |
+# | |  | | | |_| |_  | | | | | \ \_/ /\ \_/ /_| |_| |/ / 
+# \_|  \_| |_/\___/  \_/ \_| |_/\___/  \___/ \___/|___/  
+# XLink Revived - XLink Kai script for XBMC4Xbox / XBMC4Gamers (https://github.com/faithvoid/script.xlinkrevived)
+
 import socket
 import xbmc
 import xbmcgui
