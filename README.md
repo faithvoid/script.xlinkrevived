@@ -36,6 +36,7 @@ Make sure that XLink Kai is running, has "Allow remote UI connections" enabled i
 
 ## TODO
 - Integrate into Cortana Server Browser
+- Better custom notification icon support for non-Cortana users.
 
 # Credits
 - SolAZDev - Original "xbmc-kai" script that this uses initialization code from.
