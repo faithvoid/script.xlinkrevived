@@ -16,6 +16,10 @@
 ## FAQ:
 - "My XLink system isn't detected?"
 Make sure that XLink Kai is running, has "Allow remote UI connections" enabled in the settings (usually on by default), and that UDP/TCP ports 34522 are allowed in your firewall settings.
+- "Will you integrate *XYZ feature?*"
+If Team XLink supports it in their API, sure! Otherwise, there's only so much I can do.
+- "I've figured out how to do *XYZ feature*, can I add a pull request to integrate it?"
+Please do! This should be a community effort that brings players together. Any and all assistance on this project is much appreciated!
 
 ## Working
 - Displaying username + current Arena
