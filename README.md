@@ -45,6 +45,7 @@ Please do! This should be a community effort that brings players together. Any a
 
 ## TODO
 - Finish adding additional chat features (figured out how to send PMs, Arena PMs & chat messages, but haven't figured out how to receive them, or receive player information).
+- Implement login feature for users not using auto-login (you really should use auto-login though).
 - Integrate into Cortana Server Browser
 - Better custom notification icon support for non-Cortana users.
 
