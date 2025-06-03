@@ -39,14 +39,14 @@ Please do! This should be a community effort that brings players together. Any a
 - Joining sub-Arenas from Active Arenas (as it's not implemented in the GetActiveGames API, only in GetGamesList)
 - Showing additional user information
 - Editing settings of any kind
-- Any sort of social feature (ie; friends, chatting)
+- Most social feature (ie; friends, chatting)
 
 ## Bugs:
 - Toast notification icons will end up being blank for most users. A workaround is to add an "icon-xlinkkai.png" file to your skin, or modify the lines in default.py that say "icon-xlinkkai.png" to point to the icon of your choice.
 
 ## TODO
 - Finish adding additional chat features (figured out how to send PMs, Arena PMs & chat messages, but haven't figured out how to receive them, or receive player information).
-- Implement login feature for users not using auto-login (you really should use auto-login though).
+- Finish implementing login feature for users not using auto-login (you really should use auto-login though).
 - Integrate into Cortana Server Browser
 - Better custom notification icon support for non-Cortana users.
 
