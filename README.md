@@ -44,6 +44,7 @@ Please do! This should be a community effort that brings players together. Any a
 - Toast notification icons will end up being blank for most users. A workaround is to add an "icon-xlinkkai.png" file to your skin, or modify the lines in default.py that say "icon-xlinkkai.png" to point to the icon of your choice.
 
 ## TODO
+- Finish adding additional chat features (figured out how to send PMs, Arena PMs & chat messages, but haven't figured out how to receive them, or receive player information).
 - Integrate into Cortana Server Browser
 - Better custom notification icon support for non-Cortana users.
 
