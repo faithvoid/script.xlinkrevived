@@ -19,6 +19,10 @@
 
 Make sure that XLink Kai is running, has "Allow remote UI connections" enabled in the settings (usually on by default), and that UDP/TCP ports 34522 are allowed in your firewall settings.
 
+- "I downloaded it from the repository instead of the release .zip and it doesn't work?"
+
+That's why there's a release zip. Changes made directly to the repository are experimental, you're on your own if you run the repo builds.
+
 - "Will you integrate *XYZ feature?*"
 
 If Team XLink supports it in their API, sure! Otherwise, there's only so much I can do.
