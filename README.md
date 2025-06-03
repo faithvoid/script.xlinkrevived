@@ -9,7 +9,8 @@
 ![](screenshots/8.png)
 
 ## Installation:
-- Copy "default.py" & "default.tbn" to "Q:/scripts/XLinkRevived/default.py"
+- Download the latest release .zip
+- Copy the "XLinkRevived" folder to "Q:/scripts/"
 - Launch XLink Kai on your host machine, then launch the XLink Revived script and watch as it connects automagically!
 - (For the best user experience, pair this script with [Cortana Server Browser](https://github.com/faithvoid/script.cortanaserverbrowser) so you can view current session information including playercounts!)
 
