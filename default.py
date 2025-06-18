@@ -14,6 +14,8 @@ import os
 import sys
 import time
 
+XLINK_ICON = os.path.join(os.path.dirname(__file__), "icon-xlinkkai.png")
+
 class KaiConnect:
     kaiPort = 34522
     kaiPortFoward = 30000  # Probably unused
@@ -51,7 +53,7 @@ class KaiConnect:
                 data, addr = sock.recvfrom(1024)
                 if data.strip() == response_signature:
                     kai_ip = addr[0]
-                    xbmc.executebuiltin('Notification("XLink Revived", "Kai Engine found at %s", 5000, "icon-xlinkkai.png")' % kai_ip)
+                    xbmc.executebuiltin('Notification("XLink Revived", "Kai Engine found at %s", 5000, "%s")' % (kai_ip, XLINK_ICON))
                     break
             except socket.timeout:
                 break
@@ -62,6 +64,95 @@ class KaiConnect:
         if not kai_ip:
             xbmc.executebuiltin('Notification("XLink Revived", "Kai Engine not found on network.", 5000, "defaulticonerror.png")')
         return kai_ip
+
+    def Login(self):
+        # Prompt for username and password
+        keyboard_user = xbmc.Keyboard('', 'Enter XLink Kai Username')
+        keyboard_user.doModal()
+        if not keyboard_user.isConfirmed():
+            return False
+        user = keyboard_user.getText()
+        if not user:
+            xbmc.executebuiltin('Notification("XLink Revived", "Username required.", 3000, "defaulticonerror.png")')
+            return False
+
+        keyboard_pass = xbmc.Keyboard('', 'Enter XLink Kai Password', True)
+        keyboard_pass.doModal()
+        if not keyboard_pass.isConfirmed():
+            return False
+        password = keyboard_pass.getText()
+        if not password:
+            xbmc.executebuiltin('Notification("XLink Revived", "Password required.", 3000, "defaulticonerror.png")')
+            return False
+
+        # Send login to Kai Engine
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            sock.settimeout(4)
+            msg = 'KAI_CLIENT_LOGIN;%s;%s;' % (user, password)
+            sock.sendto(msg.encode("utf-8"), (self.kaiIP, self.kaiPort))
+            # Listen for login response (such as KAI_CLIENT_LOGGED_IN or KAI_CLIENT_AUTHENTICATION_FAILED)
+            try:
+                data, addr = sock.recvfrom(1024)
+                response = data.decode('utf-8', errors='ignore').strip()
+                if response == 'KAI_CLIENT_LOGGED_IN;':
+                    xbmc.executebuiltin('Notification("XLink Revived", "Login successful!", 3000, "%s")' % XLINK_ICON)
+                    sock.close()
+                    return True
+                elif response.startswith('KAI_CLIENT_AUTHENTICATION_FAILED'):
+                    xbmc.executebuiltin('Notification("XLink Revived", "Login failed: Invalid credentials.", 5000, "defaulticonerror.png")')
+                    sock.close()
+                    return False
+                else:
+                    xbmc.executebuiltin('Notification("XLink Revived", "Login: Unexpected response.", 4000, "defaulticonerror.png")')
+            except socket.timeout:
+                xbmc.executebuiltin('Notification("XLink Revived", "Login: No response from Kai Engine.", 4000, "defaulticonerror.png")')
+            sock.close()
+        except Exception as e:
+            xbmc.executebuiltin('Notification("XLink Revived", "Login Error: %s", 5000, "defaulticonerror.png")' % str(e))
+        return False
+
+    def SendChatMessage(self, message):
+        if not self.kaiIP:
+            xbmc.executebuiltin('Notification("XLink Revived", "Kai Engine not found.", 5000, "defaulticonerror.png")')
+            return
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            sock.settimeout(2)
+            msg = 'KAI_CLIENT_CHAT;%s;' % message
+            sock.sendto(msg.encode("utf-8"), (self.kaiIP, self.kaiPort))
+            sock.close()
+            xbmc.executebuiltin('Notification("XLink Revived", "Message sent.", 3000, "%s")' % XLINK_ICON)
+        except Exception as e:
+            xbmc.executebuiltin('Notification("XLink Revived", "Failed to send message: %s", 5000, "defaulticonerror.png")' % str(e))
+
+    def SendPrivateMessage(self, user, message):
+        if not self.kaiIP:
+            xbmc.executebuiltin('Notification("XLink Revived", "Kai Engine not found.", 5000, "defaulticonerror.png")')
+            return
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            sock.settimeout(2)
+            msg = 'KAI_CLIENT_PM;%s;%s;' % (user, message)
+            sock.sendto(msg.encode("utf-8"), (self.kaiIP, self.kaiPort))
+            sock.close()
+            xbmc.executebuiltin('Notification("XLink Revived", "Private Message sent.", 3000, "%s")' % XLINK_ICON)
+        except Exception as e:
+            xbmc.executebuiltin('Notification("XLink Revived", "Failed to send PM: %s", 5000, "defaulticonerror.png")' % str(e))
+
+    def SendArenaPM(self, user, message):
+        if not self.kaiIP:
+            xbmc.executebuiltin('Notification("XLink Revived", "Kai Engine not found.", 5000, "defaulticonerror.png")')
+            return
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            sock.settimeout(2)
+            msg = 'KAI_CLIENT_ARENA_PM;%s;%s;' % (user, message)
+            sock.sendto(msg.encode("utf-8"), (self.kaiIP, self.kaiPort))
+            sock.close()
+            xbmc.executebuiltin('Notification("XLink Revived", "Arena Private Message sent.", 3000, "%s")' % XLINK_ICON)
+        except Exception as e:
+            xbmc.executebuiltin('Notification("XLink Revived", "Failed to send Arena PM: %s", 5000, "defaulticonerror.png")' % str(e))
     
     def GetFromKai(self, getCall):
         url = 'http://{}:{}/api/v1/{}'.format(self.kaiIP, self.kaiPort, getCall)
@@ -85,7 +176,7 @@ class KaiConnect:
             r = requests.get(url, timeout=10)
             game_name = vector.split('/')[-1].replace('%20', ' ')
             if r.status_code == 200:
-                xbmc.executebuiltin('Notification("XLink Revived", "Arena set to: %s", 5000, "icon-xlinkkai.png")' % game_name)
+                xbmc.executebuiltin('Notification("XLink Revived", "Arena set to: %s", 5000, "%s")' % (game_name, XLINK_ICON))
             else:
                 xbmc.executebuiltin('Notification("XLink Revived", "Failed to set vector, Error Code: %d", 5000, "icon-error.png")' % r.status_code)
         except requests.exceptions.RequestException:
@@ -97,6 +188,7 @@ class KaiConnect:
             response = requests.get("http://api.teamxlink.co.uk/kai/GetGameList/v3")
             response.raise_for_status()
             data = response.json()
+            # Map: category -> [ (game_title, subvector_list) ]
             vectors = {}
             for game in data.get("gamelist", {}).get("games", []):
                 vector = game.get("primaryVector")
@@ -130,7 +222,7 @@ class KaiConnect:
                 chosen_game, subvectors = games[subcategory_choice]
                 parent_vector = "Arena/XBox/%s/%s" % (chosen_category, chosen_game)
                 if subvectors:
-                    # Prepare sub-arena menu with primary arena as first option
+                    # Prepare sub-arena menu with parent as first option
                     display_names = ["[ %s ]" % chosen_game]
                     vector_choices = [parent_vector.replace(' ', '%20')]
                     # Indented display for nested sub-vectors
@@ -145,13 +237,14 @@ class KaiConnect:
                         if not parent_found:
                             display_names.append(name)
                         vector_choices.append(sv)
-                    sub_choice = xbmcgui.Dialog().select('Sub Arenas', display_names)
+                    sub_choice = xbmcgui.Dialog().select('Select Sub Arena', display_names)
                     if sub_choice == -1:
+                        # User backed out, do nothing
                         return
                     else:
                         self.SetVector(vector_choices[sub_choice])
                         return
-                # If no subvectors, select the main vector
+                # If no subvectors, just select the main vector
                 self.SetVector(parent_vector.replace(' ', '%20'))
 
     def GetActiveVectorsFromAPI(self):
@@ -201,7 +294,7 @@ class KaiConnect:
                 setting_value = settings_options[choice]
                 if isinstance(setting_value, unicode):
                     setting_value = setting_value.encode('ascii', 'ignore')
-                xbmc.executebuiltin('Notification("XLink Kai - Settings", "%s", 5000, "icon-xlinkkai.png")' % setting_value)
+                xbmc.executebuiltin('Notification("XLink Kai - Settings", "%s", 5000, "%s")' % (setting_value, XLINK_ICON))
 
     def GetUsername(self):
         status = self.GetFromKai('getstatus')
@@ -210,95 +303,6 @@ class KaiConnect:
                 if line.strip().startswith('username:'):
                     return line.strip().split(':', 1)[1]
         return 'N/A'
-
-    def Login(self):
-        # Prompt for username and password
-        keyboard_user = xbmc.Keyboard('', 'Enter XLink Kai Username')
-        keyboard_user.doModal()
-        if not keyboard_user.isConfirmed():
-            return False
-        user = keyboard_user.getText()
-        if not user:
-            xbmc.executebuiltin('Notification("XLink Revived", "Username required.", 3000, "defaulticonerror.png")')
-            return False
-
-        keyboard_pass = xbmc.Keyboard('', 'Enter XLink Kai Password', True)
-        keyboard_pass.doModal()
-        if not keyboard_pass.isConfirmed():
-            return False
-        password = keyboard_pass.getText()
-        if not password:
-            xbmc.executebuiltin('Notification("XLink Revived", "Password required.", 3000, "defaulticonerror.png")')
-            return False
-
-        # Send username and password to Kai Engine
-        try:
-            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            sock.settimeout(4)
-            msg = 'KAI_CLIENT_LOGIN;%s;%s;' % (user, password)
-            sock.sendto(msg.encode("utf-8"), (self.kaiIP, self.kaiPort))
-            # Listen for login response
-            try:
-                data, addr = sock.recvfrom(1024)
-                response = data.decode('utf-8', errors='ignore').strip()
-                if response == 'KAI_CLIENT_LOGGED_IN;':
-                    xbmc.executebuiltin('Notification("XLink Revived", "Login successful!", 3000, "icon-xlinkkai.png")')
-                    sock.close()
-                    return True
-                elif response.startswith('KAI_CLIENT_AUTHENTICATION_FAILED'):
-                    xbmc.executebuiltin('Notification("XLink Revived", "Login failed: Invalid credentials.", 5000, "defaulticonerror.png")')
-                    sock.close()
-                    return False
-                else:
-                    xbmc.executebuiltin('Notification("XLink Revived", "Login: Unexpected response.", 4000, "defaulticonerror.png")')
-            except socket.timeout:
-                xbmc.executebuiltin('Notification("XLink Revived", "Login: No response from Kai Engine.", 4000, "defaulticonerror.png")')
-            sock.close()
-        except Exception as e:
-            xbmc.executebuiltin('Notification("XLink Revived", "Login Error: %s", 5000, "defaulticonerror.png")' % str(e))
-        return False
-
-    def SendChatMessage(self, message):
-        if not self.kaiIP:
-            xbmc.executebuiltin('Notification("XLink Revived", "Kai Engine not found.", 5000, "defaulticonerror.png")')
-            return
-        try:
-            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            sock.settimeout(2)
-            msg = 'KAI_CLIENT_CHAT;%s;' % message
-            sock.sendto(msg.encode("utf-8"), (self.kaiIP, self.kaiPort))
-            sock.close()
-            xbmc.executebuiltin('Notification("XLink Revived", "Message sent.", 3000, "icon-xlinkkai.png")')
-        except Exception as e:
-            xbmc.executebuiltin('Notification("XLink Revived", "Failed to send message: %s", 5000, "defaulticonerror.png")' % str(e))
-
-    def SendPrivateMessage(self, user, message):
-        if not self.kaiIP:
-            xbmc.executebuiltin('Notification("XLink Revived", "Kai Engine not found.", 5000, "defaulticonerror.png")')
-            return
-        try:
-            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            sock.settimeout(2)
-            msg = 'KAI_CLIENT_PM;%s;%s;' % (user, message)
-            sock.sendto(msg.encode("utf-8"), (self.kaiIP, self.kaiPort))
-            sock.close()
-            xbmc.executebuiltin('Notification("XLink Revived", "Private Message sent.", 3000, "icon-xlinkkai.png")')
-        except Exception as e:
-            xbmc.executebuiltin('Notification("XLink Revived", "Failed to send Private Message: %s", 5000, "defaulticonerror.png")' % str(e))
-
-    def SendArenaPM(self, user, message):
-        if not self.kaiIP:
-            xbmc.executebuiltin('Notification("XLink Revived", "Kai Engine not found.", 5000, "defaulticonerror.png")')
-            return
-        try:
-            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            sock.settimeout(2)
-            msg = 'KAI_CLIENT_ARENA_PM;%s;%s;' % (user, message)
-            sock.sendto(msg.encode("utf-8"), (self.kaiIP, self.kaiPort))
-            sock.close()
-            xbmc.executebuiltin('Notification("XLink Revived", "Arena Private Message sent.", 3000, "icon-xlinkkai.png")')
-        except Exception as e:
-            xbmc.executebuiltin('Notification("XLink Revived", "Failed to send Arena Private Message: %s", 5000, "defaulticonerror.png")' % str(e))
     
     def main(self):
         arg = None
@@ -319,7 +323,7 @@ class KaiConnect:
         elif arg == 'Status':
             status = self.GetFromKai('getstatus')
             if status:
-                xbmc.executebuiltin('Notification("XLink Kai", "Status: %s", 5000, "icon-xlinkkai.png")' % status.encode('ascii', 'ignore'))
+                xbmc.executebuiltin('Notification("XLink Kai", "Status: %s", 5000, "%s")' % (status.encode('ascii', 'ignore'), XLINK_ICON))
             return
         elif arg == 'Settings':
             self.DisplaySettings()
@@ -338,6 +342,7 @@ class KaiConnect:
         choice = xbmcgui.Dialog().select(menu_title, [
             'Arena List',
             'Active Arenas',
+            'Chat',
             'Return to Default Arena',
             'Settings'
         ])
@@ -349,8 +354,46 @@ class KaiConnect:
             vectors = self.GetActiveVectorsFromAPI()
             self.DisplayActiveVectorsMenu(vectors)
         elif choice == 2:
-            self.SetVector('Arena')
+            # Chat submenu
+            chat_choice = xbmcgui.Dialog().select('Chat', [
+                'Send Chat Message',
+                'Send Private Message',
+                'Send Arena PM'
+            ])
+            if chat_choice == 0:
+                keyboard = xbmc.Keyboard('', 'Enter chat message')
+                keyboard.doModal()
+                if keyboard.isConfirmed():
+                    message = keyboard.getText()
+                    if message:
+                        self.SendChatMessage(message)
+            elif chat_choice == 1:
+                keyboard = xbmc.Keyboard('', 'Enter recipient username')
+                keyboard.doModal()
+                if keyboard.isConfirmed():
+                    user = keyboard.getText()
+                    if user:
+                        keyboard2 = xbmc.Keyboard('', 'Enter private message')
+                        keyboard2.doModal()
+                        if keyboard2.isConfirmed():
+                            message = keyboard2.getText()
+                            if message:
+                                self.SendPrivateMessage(user, message)
+            elif chat_choice == 2:
+                keyboard = xbmc.Keyboard('', 'Enter recipient username')
+                keyboard.doModal()
+                if keyboard.isConfirmed():
+                    user = keyboard.getText()
+                    if user:
+                        keyboard2 = xbmc.Keyboard('', 'Enter arena PM message')
+                        keyboard2.doModal()
+                        if keyboard2.isConfirmed():
+                            message = keyboard2.getText()
+                            if message:
+                                self.SendArenaPM(user, message)
         elif choice == 3:
+            self.SetVector('Arena')
+        elif choice == 4:
             self.DisplaySettings()
 
 if __name__ == '__main__':
