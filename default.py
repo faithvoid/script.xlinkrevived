@@ -175,12 +175,35 @@ class KaiConnect:
         try:
             r = requests.get(url, timeout=10)
             game_name = vector.split('/')[-1].replace('%20', ' ')
+            arena_image_url = self.GetArenaImage(vector)
+
             if r.status_code == 200:
-                xbmc.executebuiltin('Notification("XLink Revived", "Arena set to: %s", 5000, "%s")' % (game_name, XLINK_ICON))
+                xbmc.executebuiltin('Notification("XLink Revived", "Arena set to: %s", 5000, "%s")' % (game_name, arena_image_url or XLINK_ICON))
             else:
                 xbmc.executebuiltin('Notification("XLink Revived", "Failed to set vector, Error Code: %d", 5000, "icon-error.png")' % r.status_code)
         except requests.exceptions.RequestException:
             xbmc.executebuiltin('Notification("XLink Revived", "Connection timed out. Please check the Kai Client.", 5000, "icon-error.png")')
+
+        def GetArenaImage(self, vector):
+        try:
+            encoded_vector = vector.replace(' ', '%20')
+            response = requests.get("http://api.teamxlink.co.uk/kai/GetGameList/v3", timeout=10)
+            response.raise_for_status()
+            data = response.json()
+
+            for game in data.get("gamelist", {}).get("games", []):
+                primary = game.get("primaryVector", "").replace(' ', '%20')
+                if primary == encoded_vector:
+                    return game.get("arenaImage")
+
+                for sub in game.get("subVectors", []):
+                    if sub.replace(' ', '%20') == encoded_vector:
+                        return game.get("arenaImage")
+
+        except Exception as e:
+            xbmc.log("Failed to fetch arena image: %s" % str(e), xbmc.LOGERROR)
+
+        return None  # fallback if not found
 
     # Fetch vectors and subVectors
     def GetFullVectorsFromAPI(self):
