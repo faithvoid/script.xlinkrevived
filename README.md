@@ -31,6 +31,11 @@ If Team XLink supports it in their API, sure! Otherwise, there's only so much I 
 
 Please do! This should be a community effort that brings players together. Any and all assistance on this project is much appreciated!
 
+## TODO:
+- [] Integrate Kai UI attacher script (works for messaging, not for anything else)
+- [] Integrate chat services (arena chat works, PM support doesn't)
+- [] Fix this TODO list
+
 ## Working
 - Displaying username + current Arena
 - Querying and joining Arenas (via "Arenas List" and "Active Arenas")
