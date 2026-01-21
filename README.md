@@ -61,21 +61,21 @@ Please do! This should be a community effort that brings players together. Any a
 
 ## Developer Info:
 ### InfoLabels for Skin Development
-xlinkConnectedIP - IP address of the currently connected XLink Kai machine. ``` 192.168.1.1 ``` 
-xlinkConnected - The status of the connection between XLink Revived and Kai Engine  (```Online``` and ```Offline```)
-xlinkActiveUser - Curently logged in XLink Kai user ```faithvoid```
-xlinkActiveUserAvatar - Fetches and displays the logged in XLink Kai user's avatar via HTTP 
-xlinkActiveArena - Current connected XLink Kai arena
-xlinkArenaAvatar - Fetches and displays the image of the current arena via HTTP
-xlinkChatPending - User has a pending (arena/messenger) chat message.
-xlinkChatLastMessage - Display the last received XLink Kai arena/messenger chat message.
-xlinkPMLastMessage - Display the last received XLink Kai Private Message.
-xlinkMessagePending - User has a pending Private Message.
-xlinkFriendPending - User has a pending Friend Request
-xlinkVectorType - Dispaly whether the user is connected to an Arena or a Messenger vector (states are 'Arena' and 'Messenger')
-xlinkArenaUsers - Display total Arena user count
-xlinkFriends - Display total friend count
-xlinkFriendsOnline - Display currently online friend count
+- xlinkConnectedIP - IP address of the currently connected XLink Kai machine. ``` 192.168.1.1 ``` 
+- xlinkConnected - The status of the connection between XLink Revived and Kai Engine  (```Online``` and ```Offline```)
+- xlinkActiveUser - Curently logged in XLink Kai user ```faithvoid```
+- xlinkActiveUserAvatar - Fetches and displays the logged in XLink Kai user's avatar via HTTP 
+- xlinkActiveArena - Current connected XLink Kai arena
+- xlinkArenaAvatar - Fetches and displays the image of the current arena via HTTP
+- xlinkChatPending - User has a pending (arena/messenger) chat message.
+- xlinkChatLastMessage - Display the last received XLink Kai arena/messenger chat message.
+- xlinkPMLastMessage - Display the last received XLink Kai Private Message.
+- xlinkMessagePending - User has a pending Private Message.
+- xlinkFriendPending - User has a pending Friend Request
+- xlinkVectorType - Dispaly whether the user is connected to an Arena or a Messenger vector (states are 'Arena' and 'Messenger')
+- xlinkArenaUsers - Display total Arena user count
+- xlinkFriends - Display total friend count
+- xlinkFriendsOnline - Display currently online friend count
 
 # Credits
 - SolAZDev - Original "xbmc-kai" script that this uses initialization code from.
