@@ -10,8 +10,8 @@
 
 ## Installation:
 - Download the latest release .zip
-- Copy the "XLinkRevived" folder to "Q:/scripts/"
-- Launch XLink Kai on your host machine, then launch the XLink Revived script and watch as it connects automagically!
+- Copy the "script.xlinkRevived" folder to "Q:/scripts/"
+- Launch XLink Kai on your host machine, then launch the XLink Revived script and watch as it connects automagically! If this fails, you can enter your Kai IP address manually in the add-on settings (as well as your XLink Kai username + password if auto-login isn't enabled)
 - (For the best user experience, pair this script with [Cortana Server Browser](https://github.com/faithvoid/script.cortanaserverbrowser) so you can view current session information including playercounts!)
 
 ## FAQ:
@@ -32,26 +32,31 @@ If Team XLink supports it in their API, sure! Otherwise, there's only so much I 
 Please do! This should be a community effort that brings players together. Any and all assistance on this project is much appreciated!
 
 ## TODO:
-- [] Integrate Kai UI attacher script (works for messaging, not for anything else)
-- [] Integrate chat services (arena chat works, PM support doesn't)
+- [X] Integrate Kai UI attacher script
+- [X] Integrate chat services (arena chat works, PM support doesn't)
+- [X] Fix notifier disconnection when sending a new arena state via HTTPS. 
 - [] Fix this TODO list
 
 ## Working
-- Displaying username + current Arena
-- Querying and joining Arenas (via "Arenas List" and "Active Arenas")
-- Querying and joining sub-Arenas (via "Arenas List")
-- Setting the Arena back to the default Arena!
-- Viewing XLink Kai statistics
-- sys.argv support for skin integration [ie; calling RunScript(Q:/scripts/XLink/default.py,ActiveArenas) will automatically launch the Active Arenas subcategory
+- Auto-discovering XLink Kai hosts when an IP address isn't provided (UI client + Notifier)
+- Displaying username + current Arena (UI client)
+- Querying and joining Arenas (via "Arenas List" and "Active Arenas") (UI client)
+- Querying and joining sub-Arenas (via "Arenas List") (UI client)
+- Setting the Arena back to the default Arena! (General Chat) in the UI client
+- Sending chat messages to players in the current arena in the UI client
+- Receiving notifications for players joining/leaving/chatting in your current Arena via the notifier! (Notifier)
+- View chat history via the XLink Revived UI client, making sure you never miss an important message! (UI client + Notifier)
+- Viewing XLink Kai statistics (UI client)
+- sys.argv support for skin integration (ie; calling ```RunScript('script.xlinkRevived',Chat)``` to call the Chat submenu)
 
 ## Not Working
 - Joining sub-Arenas from Active Arenas (as it's not implemented in the GetActiveGames API, only in GetGamesList)
 - Showing additional user information
 - Editing settings of any kind
-- Most social feature (ie; friends, chatting)
 
 ## Bugs:
-- Toast notification icons will end up being blank for most users. A workaround is to add an "icon-xlinkkai.png" file to your skin, or modify the lines in default.py that say "icon-xlinkkai.png" to point to the icon of your choice.
+- Joining an arena via the "XLink Revived" UI will kill the notifier. There seems to be an engine-specific issue that treats HTTP arena connections as a new engine takeover, so these sections might have to be rebuilt.
+- Notifier script is a bit heavy on stock 64MB systems, I'd highly recommend running XBMC in 480p to use as little RAM as possible on stock systems.
 
 ## TODO
 - Finish adding additional chat features (figured out how to send PMs, Arena PMs & chat messages, but haven't figured out how to receive them, or receive player information).
