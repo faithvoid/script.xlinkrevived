@@ -1,4 +1,4 @@
-# XLink Revived - XLink Kai script for XBMC4Xbox
+# XLink Revived - XLink Kai script for Xodi (formerly XBMC4Xbox)
 
 ![](screenshots/1.png)
 ![](screenshots/5.png)
@@ -19,6 +19,10 @@
 
 Make sure that XLink Kai is running, has "Allow remote UI connections" enabled in the settings (usually on by default), and that UDP/TCP ports 34522 are allowed in your firewall settings.
 
+- "I'm getting zero notifications from the notifier for some reason, even though I've restarted the script / Xodi?"
+
+For some reason, sometimes a takeover can repeatedly fail and lead to this issue. Restart the XLink Kai client on your PC and try again. 
+
 - "I downloaded it from the repository instead of the release .zip and it doesn't work?"
 
 That's why there's a release zip. Changes made directly to the repository are experimental, you're on your own if you run the repo builds.
@@ -32,6 +36,7 @@ If Team XLink supports it in their API, sure! Otherwise, there's only so much I 
 Please do! This should be a community effort that brings players together. Any and all assistance on this project is much appreciated!
 
 ## TODO:
+- [X] Finish integrating Xodi-specific features & skin features
 - [X] Integrate Kai UI attacher script
 - [X] Integrate chat services (arena chat works, PM support doesn't)
 - [X] Fix notifier disconnection when sending a new arena state via HTTPS. 
@@ -86,3 +91,4 @@ Please do! This should be a community effort that brings players together. Any a
 - SolAZDev - Original "xbmc-kai" script that this uses initialization code from.
 - CrunchBite - For working on XLink Kai, providing accessible REST API requests, and chatting with me about how certain systems work! :)
 - Milenko - For all the discussions about different methods of XLink integration we've had!
+- Team XLink - For making one hell of a piece of tunnelling software. :)
